@@ -86,7 +86,7 @@ function getAverageGoals(data) {
     goalsPerMatch.reduce((sum, element) => {
       return (sum += element);
     }, 0) / goalsPerMatch.length;
-  console.log(goalsPerMatch);
+  //console.log(goalsPerMatch);
 
   return averageGoalsPerMatch;
 }
@@ -100,26 +100,209 @@ console.log(getAverageGoals(fifaData));
 Hint: Investigate your data to find "team initials"!
 Hint: use `.reduce` */
 
-function getCountryWins(/* code here */) {
-  /* code here */
+function getCountryWins(data, teamInitials) {
+  const winners = getFinals(data).map((element, i) => {
+    if (element["Home Team Goals"] === element["Away Team Goals"])
+      if (element["Win conditions"].split(" ")[0] === element["Home Team Name"])
+        return element["Home Team Initials"];
+      else return element["Away Team Initials"];
+
+    if (element["Home Team Goals"] > element["Away Team Goals"])
+      return element["Home Team Initials"];
+    else return element["Away Team Initials"];
+  });
+
+  const wins = winners.reduce((sum, el) => {
+    if (teamInitials === el) sum++;
+    return sum;
+  }, 0);
+
+  return wins;
 }
 
-getCountryWins();
+console.log("BRA: " + getCountryWins(fifaData, "BRA"));
+console.log("ITA: " + getCountryWins(fifaData, "ITA"));
+console.log("ARG: " + getCountryWins(fifaData, "ARG"));
+console.log("FRA: " + getCountryWins(fifaData, "FRA"));
+console.log("PER: " + getCountryWins(fifaData, "PER"));
 
-/* Stretch 3: Write a function called getGoals() that accepts a parameter `data` and returns the team with the most goals score per appearance (average goals for) in the World Cup finals */
+/* Stretch 2: Write a function called getGoals() that accepts a parameter `data` and returns the team with the most goals score per appearance (average goals for) in the World Cup finals */
 
-function getGoals(/* code here */) {
-  /* code here */
+function getGoals(data) {
+  const winners = getFinals(data).map((el) => {
+    const HomeGoals = data.reduce((sum, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Home Team Name"])
+          sum += elData["Home Team Goals"];
+        else if (elData["Away Team Name"] === el["Home Team Name"])
+          sum += elData["Away Team Goals"];
+      }
+      return sum;
+    }, 0);
+
+    const HomeAppearances = data.reduce((count, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Home Team Name"]) count++;
+        else if (elData["Away Team Name"] === el["Home Team Name"]) count++;
+      }
+      return count;
+    }, 0);
+
+    const AwayGoals = data.reduce((sum, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Away Team Name"])
+          sum += elData["Home Team Goals"];
+        else if (elData["Away Team Name"] === el["Away Team Name"])
+          sum += elData["Away Team Goals"];
+      }
+      return sum;
+    }, 0);
+
+    const AwayAppearances = data.reduce((count, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Away Team Name"]) count++;
+        else if (elData["Away Team Name"] === el["Away Team Name"]) count++;
+      }
+      return count;
+    }, 0);
+
+    const HomeGoalsFor = HomeGoals / HomeAppearances;
+    const AwayGoalsFor = AwayGoals / AwayAppearances;
+
+    if (HomeGoalsFor === AwayGoalsFor)
+      return `${el["Home Team Name"]} and ${el["Away Team Name"]} had the same average goals per appearance`;
+    else if (HomeGoalsFor > AwayGoalsFor)
+      return `In ${el.Year}: ${el["Home Team Name"]} had a better offence with an average goals per appearance of ${HomeGoalsFor}.`;
+    else
+      return `In ${el.Year}: ${el["Away Team Name"]} had a better offence with an average goals per appearance of ${AwayGoalsFor}.`;
+  });
+  return winners;
 }
 
-getGoals();
+console.log(getGoals(fifaData));
 
-/* Stretch 4: Write a function called badDefense() that accepts a parameter `data` and calculates the team with the most goals scored against them per appearance (average goals against) in the World Cup finals */
+/* Stretch 3: Write a function called badDefense() that accepts a parameter `data` and calculates the team with the most goals scored against them per appearance (average goals against) in the World Cup finals */
 
-function badDefense(/* code here */) {
-  /* code here */
+function badDefense(data) {
+  const losers = getFinals(data).map((el) => {
+    const HomeGoalsAgainst = data.reduce((sum, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Home Team Name"])
+          sum += elData["Away Team Goals"];
+        else if (elData["Away Team Name"] === el["Home Team Name"])
+          sum += elData["Home Team Goals"];
+      }
+      return sum;
+    }, 0);
+
+    const HomeAppearances = data.reduce((count, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Home Team Name"]) count++;
+        else if (elData["Away Team Name"] === el["Home Team Name"]) count++;
+      }
+      return count;
+    }, 0);
+
+    const AwayGoalsAgainst = data.reduce((sum, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Away Team Name"])
+          sum += elData["Away Team Goals"];
+        else if (elData["Away Team Name"] === el["Away Team Name"])
+          sum += elData["Home Team Goals"];
+      }
+      return sum;
+    }, 0);
+
+    const AwayAppearances = data.reduce((count, elData) => {
+      if (elData.Year === el.Year) {
+        if (elData["Home Team Name"] === el["Away Team Name"]) count++;
+        else if (elData["Away Team Name"] === el["Away Team Name"]) count++;
+      }
+      return count;
+    }, 0);
+
+    const HomeGoalsAgainstAvg = HomeGoalsAgainst / HomeAppearances;
+    const AwayGoalsAgainstAvg = AwayGoalsAgainst / AwayAppearances;
+
+    if (HomeGoalsAgainstAvg === AwayGoalsAgainstAvg)
+      return `${el["Home Team Name"]} and ${el["Away Team Name"]} had the same average goals per appearance`;
+    else if (HomeGoalsAgainstAvg > AwayGoalsAgainstAvg)
+      return `In ${el.Year}: ${el["Home Team Name"]} had a bad defense with an average goals against per appearance of ${HomeGoalsAgainstAvg}.`;
+    else
+      return `In ${el.Year}: ${el["Away Team Name"]} had a bad defense with an average goals against per appearance of ${AwayGoalsAgainstAvg}.`;
+  });
+  return losers;
 }
 
-badDefense();
+console.log(badDefense(fifaData));
 
 /* If you still have time, use the space below to work on any stretch goals of your chosing as listed in the README file. */
+
+// Stretch 4: Create a function that takes country initials as a parameter and returns their total number of World Cup appearances.
+
+function getNumberOfAppearances(data, teamInitials) {
+  const appearancesPerYear = getYears(getFinals).map((el) => {
+    const numberOfAppearances = data.reduce((count, elData) => {
+      if (elData.Year === el) {
+        if (
+          elData["Home Team Initials"] === teamInitials ||
+          elData["Away Team Initials"] === teamInitials
+        )
+          count++;
+      }
+      return count;
+    }, 0);
+
+    return { year: el, appearances: numberOfAppearances };
+  });
+
+  return appearancesPerYear;
+}
+console.log("BRA:");
+console.log(getNumberOfAppearances(fifaData, "BRA"));
+console.log("ITA:");
+console.log(getNumberOfAppearances(fifaData, "ITA"));
+console.log("MEX:");
+console.log(getNumberOfAppearances(fifaData, "MEX"));
+console.log("FRA:");
+console.log(getNumberOfAppearances(fifaData, "FRA"));
+console.log("TUR:");
+console.log(getNumberOfAppearances(fifaData, "TUR"));
+
+//Stretch 5: Create a function that takes country initials as a parameter and determines how many goals that country has scored in World Cup games since 1930.
+
+function getGoalsSince1930(data, teamInitials) {
+  const goals = data.reduce((sum, elData) => {
+    if (elData["Home Team Initials"] === teamInitials)
+      sum += elData["Home Team Goals"];
+    if (elData["Away Team Initials"] === teamInitials)
+      sum += elData["Away Team Goals"];
+    return sum;
+  }, 0);
+
+  return goals;
+}
+console.log("BRA:");
+console.log(getGoalsSince1930(fifaData, "BRA"));
+console.log("ITA:");
+console.log(getGoalsSince1930(fifaData, "ITA"));
+console.log("MEX:");
+console.log(getGoalsSince1930(fifaData, "MEX"));
+console.log("FRA:");
+console.log(getGoalsSince1930(fifaData, "FRA"));
+console.log("TUR:");
+console.log(getGoalsSince1930(fifaData, "TUR"));
+
+//Stretch 6: Use .map to format country names into <h1> HTML headers.
+
+function formatH1(data) {
+  const formattedData = data.map((elData) => {
+    elData["Home Team Name"] = "<h1>" + elData["Home Team Name"] + "</h1>";
+    elData["Away Team Name"] = "<h1>" + elData["Away Team Name"] + "</h1>";
+    return elData;
+  });
+
+  return formattedData;
+}
+
+console.log(formatH1(fifaData)[0]);
